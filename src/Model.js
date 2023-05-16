@@ -6,7 +6,7 @@ export default class Model {
   constructor() {
     this.data = {
       persons: [],
-      loaded: true,
+      loaded: false,
       sorted: {
         by: null,
         descending: false,
@@ -20,6 +20,7 @@ export default class Model {
 
   async loadClients() {
     this.loaded = true
+    customEvents.notify('UpdatePersons')
     const persons = await clients.getClients()
     this.data.persons = persons
     this.loaded = false
@@ -31,42 +32,57 @@ export default class Model {
   }
 
   add(person) {
+    this.data.loaded = true
+    customEvents.notify('UpdatePersons')
     clients
       .createClient(person)
-      .then(() => {
-        this.data.persons.push(person)
+      .then((data) => {
+        this.data.persons.push(data)
+        this.data.loaded = false
         customEvents.notify('UpdatePersons')
       })
       .catch((e) => {
         console.log(e)
+        this.data.loaded = false
+        customEvents.notify('UpdatePersons')
       })
   }
 
   change(personId, personData) {
+    this.data.loaded = true
+    customEvents.notify('UpdatePersons')
     clients
       .changeClient(personId, personData)
-      .then(() => {
+      .then((data) => {
         const person = this.data.persons.find(
           (person) => person.id === personId,
         )
-        Object.assign(person, personData)
+        Object.assign(person, data)
+        this.data.loaded = false
         customEvents.notify('UpdatePersons')
       })
       .catch((e) => {
+        this.data.loaded = false
+        customEvents.notify('UpdatePersons')
         console.log(e)
       })
   }
 
   delete(id) {
+    this.data.loaded = true
+    customEvents.notify('UpdatePersons')
     clients
       .deleteClient(id)
       .then(() => {
         this.data.persons = this.data.persons.filter(
           (person) => person.id !== id,
         )
+        this.data.loaded = false
         customEvents.notify('UpdatePersons')
       })
       .catch((e) => {
+        this.data.loaded = false
+        customEvents.notify('UpdatePersons')
         console.log(e)
       })
   }
@@ -86,6 +102,23 @@ export default class Model {
       }
     }
     customEvents.notify('UpdatePersons')
+  }
+
+  search(request) {
+    this.data.loaded = true
+    customEvents.notify('UpdatePersons')
+    clients
+      .searchClients(request)
+      .then((data) => {
+        this.data.persons = data
+        this.data.loaded = false
+        customEvents.notify('UpdatePersons')
+      })
+      .catch((e) => {
+        this.data.loaded = false
+        customEvents.notify('UpdatePersons')
+        console.log(e)
+      })
   }
 
   modal(isActive, layout = null) {

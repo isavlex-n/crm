@@ -10,6 +10,15 @@ class Clients {
     return res.data
   }
 
+  async searchClients(search) {
+    const res = await axios.get(this.url, {
+      params: {
+        search,
+      }
+    })
+    return res.data
+  }
+
   async getClient(id) {
     const res = await axios.get(`${this.url}/${id}`)
     return res.data
@@ -17,6 +26,7 @@ class Clients {
 
   async changeClient(id, data) {
     const res = await axios.patch(`${this.url}/${id}`, data)
+    return res.data
   }
 
   async deleteClient(id) {
@@ -26,6 +36,7 @@ class Clients {
   async createClient(client) {
     try {
       const res = await axios.post(this.url, client)
+      return res.data
     } catch (error) {
       throw new Error(error)
     }

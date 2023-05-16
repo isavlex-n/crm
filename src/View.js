@@ -45,9 +45,10 @@ export default class View {
     data.persons.map((person) => {
       items.append(this.getItem(person))
     })
-
-    if (items) {
+    if (items && !this.data.loaded) {
       this.html.querySelector('.persons__list').replaceChildren(items)
+    } else {
+      this.html.querySelector('.persons__list').replaceChildren(this.getLoader())
     }
   }
 
@@ -55,11 +56,17 @@ export default class View {
     this.modal.updateView(data.modal)
   }
 
+  getLoader() {
+    let loader = document.createElement('div')
+    loader.classList.add('lds-ring')
+    loader.insertAdjacentHTML('beforeend', '</div><div></div><div></div><div></div><div></div>')
+    return loader
+  }
+
   getSearch() {
     return `
       <div class="search">
         <a href="/" class="search__link">
-          <img class="search__logo" />
         </a>
         <input placeholder="Введите запрос" class="search__input" />
       </div>
@@ -70,33 +77,36 @@ export default class View {
     const li = document.createElement('li')
     const created = new Date(createdAt)
     const updated = new Date(updatedAt)
+    let otherContacts = 0
     li.classList.add('persons__item')
     li.insertAdjacentHTML(
       'beforeend',
       `
         <div class="persons__id">${id}</div>
         <div class="persons__name">${lastName} ${name} ${surname}</div>
-        <div class="persons__created"><span>${created.toLocaleDateString()}</span>&nbsp;<span class="gray-text">${created.getHours()}:${created.getMinutes()}</span></div>
-        <div class="persons__last-change"><span>${updated.toLocaleDateString()}</span>&nbsp;<span class="gray-text">${updated.getHours()}:${updated.getMinutes()}</span></div>
+        <div class="persons__created"><span>${created.toLocaleDateString()}</span> <span class="gray-text">${created.getHours()}:${created.getMinutes()}</span></div>
+        <div class="persons__last-change"><span>${updated.toLocaleDateString()}</span> <span class="gray-text">${updated.getHours()}:${updated.getMinutes()}</span></div>
         <div class="persons__social">${
           contacts &&
           contacts
-            .map(
-              (el) =>{
-                let prefix = ''
-                let target = '_blank'
-                if (el.type === 'phone' || el.type === 'extraPhone') {
-                  prefix = 'tel:'
-                  target = '_self'
-                }
-                if (el.type === 'mail') {
-                  prefix = 'mailto:'
-                  target = '_self'
-                }
-                return `<a href="${prefix}${el.value}" class="icon ${el.type}" target="${target}" title="${el.type}"></a>`}
-            )
-            .join('&nbsp;')
-        }</div>
+            .map((el, index) => {
+              let prefix = ''
+              let target = '_blank'
+              if (el.type === 'phone' || el.type === 'extraPhone') {
+                prefix = 'tel:'
+                target = '_self'
+              }
+              if (el.type === 'mail') {
+                prefix = 'mailto:'
+                target = '_self'
+              }
+              if (index > 3) {
+                otherContacts++
+                return
+              }
+              return `<a href="${prefix}${el.value}" class="icon ${el.type}" target="${target}" title="${el.type}"></a>&nbsp;`
+            }).join('')
+        }${otherContacts ? `<span class="persons__other">+${otherContacts}</span>` : ''}</div>
         <div class="persons__actions">
           <a href="#" data-id="${id}" data-type="change" class="link change">Изменить</a>
           <a href="#" data-id="${id}" data-type="delete" class="link delete">Удалить</a>
@@ -165,7 +175,9 @@ export default class View {
             </div>
           </div>
         </div>
-        <input type="text" name="contact-${contact?.type || 'phone'}-${Math.floor(
+        <input type="text" name="contact-${
+          contact?.type || 'phone'
+        }-${Math.floor(
       Math.random() * 1000,
     )}" placeholder="Введите данные контакта" class="" value="${
       contact ? contact.value : ''
@@ -206,10 +218,13 @@ export default class View {
         
         <div class="persons__contacts">
           ${
-            person ?
-            person.contacts
-              .map((contact, index) => this.getContactLayout(contact, index))
-              .join('') : ''
+            person
+              ? person.contacts
+                  .map((contact, index) =>
+                    this.getContactLayout(contact, index),
+                  )
+                  .join('')
+              : ''
           }
           <button class="persons__button persons__button_add-contact" data-type="addContact"><span data-type="addContact">Добавить контакт</span></button>
         </div>
@@ -247,8 +262,6 @@ export default class View {
         const dataset = event.target.dataset
         const personForm = this.html.querySelector('.persons__addition')
         const personData = {
-          createdAt: new Date(),
-          updatedAt: new Date(),
           contacts: [],
         }
         if (event.target.classList.contains('persons__option')) {
@@ -288,7 +301,6 @@ export default class View {
             }
           }
           handler({
-            id: Date.now().toString(),
             ...personData,
           })
         }
@@ -317,7 +329,6 @@ export default class View {
               personData[key] = value
             }
           }
-          console.log(personData)
           handler(event.target.dataset.id, {
             ...personData,
           })
@@ -371,6 +382,14 @@ export default class View {
       .addEventListener('click', (event) => {
         const filter = event.target.dataset.filter
         handler(filter)
+      })
+  }
+
+  searchPersonsHandler(handler) {
+    this.html
+      .querySelector('.search__input')
+      .addEventListener('input', (event) => {
+        handler(event.target.value)
       })
   }
 }

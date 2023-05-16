@@ -14,6 +14,10 @@ export default class Presenter {
     this.model.loadClients()
     this.view = new View(this.model.get())
 
+    this.view.searchPersonsHandler((request) => {
+      this.model.search(request)
+    })
+
     this.view.sortPersonsHandler((filter) => {
       this.model.sort(filter)
     })
