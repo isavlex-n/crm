@@ -121,6 +121,12 @@ export default class Model {
       })
   }
 
+  showOtherContacts(id) {
+    const person = this.data.persons.find((person) => person.id === id)
+    person.showContacts = true
+    customEvents.notify('UpdatePersons')
+  }
+
   modal(isActive, layout = null) {
     this.data.modal.isActive = isActive
     this.data.modal.layout = layout

@@ -48,7 +48,9 @@ export default class View {
     if (items && !this.data.loaded) {
       this.html.querySelector('.persons__list').replaceChildren(items)
     } else {
-      this.html.querySelector('.persons__list').replaceChildren(this.getLoader())
+      this.html
+        .querySelector('.persons__list')
+        .replaceChildren(this.getLoader())
     }
   }
 
@@ -59,7 +61,10 @@ export default class View {
   getLoader() {
     let loader = document.createElement('div')
     loader.classList.add('lds-ring')
-    loader.insertAdjacentHTML('beforeend', '</div><div></div><div></div><div></div><div></div>')
+    loader.insertAdjacentHTML(
+      'beforeend',
+      '</div><div></div><div></div><div></div><div></div>',
+    )
     return loader
   }
 
@@ -73,7 +78,7 @@ export default class View {
     `
   }
 
-  getItem({ id, name, lastName, surname, createdAt, updatedAt, contacts }) {
+  getItem({ id, name, lastName, surname, createdAt, updatedAt, contacts, showContacts }) {
     const li = document.createElement('li')
     const created = new Date(createdAt)
     const updated = new Date(updatedAt)
@@ -100,13 +105,22 @@ export default class View {
                 prefix = 'mailto:'
                 target = '_self'
               }
-              if (index > 3) {
+              if (index > 3 && !showContacts) {
                 otherContacts++
                 return
               }
-              return `<a href="${prefix}${el.value}" class="icon ${el.type}" target="${target}" title="${el.type}"></a>&nbsp;`
-            }).join('')
-        }${otherContacts ? `<span class="persons__other">+${otherContacts}</span>` : ''}</div>
+              return `
+                <a href="${prefix}${el.value}" class="icon ${el.type}" target="${target}" title="${el.type}">
+                  <span>${el.value}</span>
+                </a>&nbsp;
+                `
+            })
+            .join('')
+        }${
+        otherContacts
+          ? `<span class="icon persons__other" data-id="${id}">+${otherContacts}</span>`
+          : ''
+      }</div>
         <div class="persons__actions">
           <a href="#" data-id="${id}" data-type="change" class="link change">Изменить</a>
           <a href="#" data-id="${id}" data-type="delete" class="link delete">Удалить</a>
@@ -195,7 +209,9 @@ export default class View {
       : null
     return `
       <form class="persons__addition">
+        
         <div class="persons__wrap">
+          ${id ? `<header><h2>Изменить данные</h2><span>ID:${id}</span></header>` : ''}
           <label class="persons__label persons__label_requried">
             <span>Фамилия</span>
             <input type="text" name="lastName" class="persons__input" data-type="lastName" value="${
@@ -227,6 +243,9 @@ export default class View {
               : ''
           }
           <button class="persons__button persons__button_add-contact" data-type="addContact"><span data-type="addContact">Добавить контакт</span></button>
+        </div>
+        <div class="error">
+          ${this.data.error ? this.data.error : ''}
         </div>
         <div class="persons__wrap text-center">
           ${
@@ -306,6 +325,7 @@ export default class View {
         }
       })
   }
+
   changePersonHandler(handler) {
     this.html
       .querySelector('.modal__content')
@@ -335,6 +355,7 @@ export default class View {
         }
       })
   }
+
   toggleModalHandler(handler) {
     this.html.querySelector('.persons').addEventListener('click', (event) => {
       const dataset = event.target.dataset
@@ -390,6 +411,17 @@ export default class View {
       .querySelector('.search__input')
       .addEventListener('input', (event) => {
         handler(event.target.value)
+      })
+  }
+
+  showContactsHandler(handler) {
+    this.html
+      .querySelector('.persons__list')
+      .addEventListener('click', (event) => {
+        if (event.target.classList.contains('persons__other')) {
+          const id = event.target.dataset.id
+          handler(id)
+        }
       })
   }
 }

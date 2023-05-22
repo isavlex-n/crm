@@ -41,6 +41,10 @@ export default class Presenter {
       this.model.modal(false)
     })
 
+    this.view.showContactsHandler((id) => {
+      this.model.showOtherContacts(id)
+    })
+
     customEvents.makeSubscribe('UpdateModal', () => {
       this.view.updateModal(this.model.get())
     })
