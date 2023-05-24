@@ -1,5 +1,5 @@
 import Modal from './Modal'
-
+import debounce from './utils/debounce'
 export default class View {
   constructor(data) {
     this.data = data
@@ -78,7 +78,16 @@ export default class View {
     `
   }
 
-  getItem({ id, name, lastName, surname, createdAt, updatedAt, contacts, showContacts }) {
+  getItem({
+    id,
+    name,
+    lastName,
+    surname,
+    createdAt,
+    updatedAt,
+    contacts,
+    showContacts,
+  }) {
     const li = document.createElement('li')
     const created = new Date(createdAt)
     const updated = new Date(updatedAt)
@@ -211,7 +220,11 @@ export default class View {
       <form class="persons__addition">
         
         <div class="persons__wrap">
-          ${id ? `<header><h2>Изменить данные</h2><span>ID:${id}</span></header>` : ''}
+          ${
+            id
+              ? `<header><h2>Изменить данные</h2><span>ID:${id}</span></header>`
+              : ''
+          }
           <label class="persons__label persons__label_requried">
             <span>Фамилия</span>
             <input type="text" name="lastName" class="persons__input" data-type="lastName" value="${
@@ -224,7 +237,7 @@ export default class View {
               person?.name ?? ''
             }" />
           </label>
-          <label class="persons__label">
+          <label class="persons__label persons__label_requried">
             <span>Отчество</span>
             <input type="text" name="surname" class="persons__input" data-type="surname" value="${
               person?.surname ?? ''
@@ -245,13 +258,13 @@ export default class View {
           <button class="persons__button persons__button_add-contact" data-type="addContact"><span data-type="addContact">Добавить контакт</span></button>
         </div>
         <div class="error">
-          ${this.data.error ? this.data.error : ''}
+          
         </div>
         <div class="persons__wrap text-center">
           ${
             person
               ? `<button class="persons__button persons__button_add" data-type="changePerson" data-id="${id}" type="submit">Сохранить</button>`
-              : '<button class="persons__button persons__button_add" data-type="addPerson" type="submit">Сохранить</button>'
+              : `<button class="persons__button persons__button_add" data-type="addPerson" type="submit">Сохранить</button>`
           }
         </div>
       </form>
@@ -319,9 +332,14 @@ export default class View {
               personData[splitKey] = value
             }
           }
-          handler({
-            ...personData,
-          })
+          if (personData.lastName && personData.name && personData.surname) {
+            handler({
+              ...personData,
+            })
+          } else {
+            const error = this.html.querySelector('.error')
+            error.textContent = 'Заполните все поля'
+          }
         }
       })
   }
@@ -349,9 +367,14 @@ export default class View {
               personData[key] = value
             }
           }
-          handler(event.target.dataset.id, {
-            ...personData,
-          })
+          if (personData.lastName && personData.name && personData.surname) {
+            handler(event.target.dataset.id, {
+              ...personData,
+            })
+          } else {
+            const error = this.html.querySelector('.error')
+            error.textContent = 'Заполните все поля'
+          }
         }
       })
   }
@@ -410,7 +433,8 @@ export default class View {
     this.html
       .querySelector('.search__input')
       .addEventListener('input', (event) => {
-        handler(event.target.value)
+        const debouncedHandler = debounce(handler, 1000)
+        debouncedHandler(event.target.value)
       })
   }
 

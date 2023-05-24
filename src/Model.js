@@ -1,7 +1,6 @@
 import { customEvents } from './app'
 import { filters } from './utils/filters'
 import clients from './api/clients'
-
 export default class Model {
   constructor() {
     this.data = {

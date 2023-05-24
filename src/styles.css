@@ -149,10 +149,9 @@ main {
 
 .persons__item {
   display: grid;
-  grid-template-columns: 1fr 2.1fr minmax(111px, 1fr) minmax(111px, 1fr) minmax(
-      108px,
-      108px
-    ) minmax(132px, 2fr);
+  grid-template-columns:
+    1fr 2.1fr minmax(111px, 1fr) minmax(111px, 1fr) minmax(108px, 108px)
+    minmax(132px, 2fr);
   align-items: center;
   column-gap: 30px;
   padding: 20px;
@@ -161,7 +160,10 @@ main {
 
 @media screen and (max-width: 850px) {
   .persons__item {
-    grid-template-columns: minmax(80px, 82px) minmax(185px, 200px) minmax(80px, 82px) minmax(80px, 82px) minmax(80px, 82px) 1fr;
+    grid-template-columns: minmax(80px, 82px) minmax(185px, 200px) minmax(
+        80px,
+        82px
+      ) minmax(80px, 82px) minmax(80px, 82px) 1fr;
     column-gap: 20px;
   }
 }
